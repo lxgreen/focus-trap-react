@@ -1,5 +1,6 @@
-const React = require('react');
-const createFocusTrap = require('focus-trap');
+import React from 'react';
+import PropTypes from 'prop-types';
+import createFocusTrap from 'focus-trap';
 
 const checkedProps = [
   'active',
@@ -12,26 +13,7 @@ const checkedProps = [
 class FocusTrap extends React.Component {
 
   componentDidMount() {
-    // We need to hijack the returnFocusOnDeactivate option,
-    // because React can move focus into the element before we arrived at
-    // this lifecycle hook (e.g. with autoFocus inputs). So the component
-    // captures the previouslyFocusedElement in componentWillMount,
-    // then (optionally) returns focus to it in componentWillUnmount.
-    const specifiedFocusTrapOptions = this.props.focusTrapOptions;
-    const tailoredFocusTrapOptions = {
-      returnFocusOnDeactivate: false
-    };
-    for (const optionName in specifiedFocusTrapOptions) {
-      if (!specifiedFocusTrapOptions.hasOwnProperty(optionName)) continue;
-      if (optionName === 'returnFocusOnDeactivate') continue;
-      tailoredFocusTrapOptions[optionName] =
-        specifiedFocusTrapOptions[optionName];
-    }
-
-    this.focusTrap = this.props._createFocusTrap(
-      this.node,
-      tailoredFocusTrapOptions
-    );
+    this.focusTrap = this.props._createFocusTrap(this.node, this.props.focusTrapOptions);
     if (this.props.active) {
       this.focusTrap.activate();
     }
@@ -58,29 +40,25 @@ class FocusTrap extends React.Component {
     this.focusTrap.deactivate();
   }
 
-  setNode = el => {
-    this.node = el;
-  };
+  setNode = el => this.node = el;
 
   render() {
-    const elementProps = {
-      ref: this.setNode
-    };
+    const elementProps = Object.keys(this.props)
+      .filter(prop => Object.prototype.hasOwnProperty.call(this.props, prop) && !checkedProps.includes(prop))
+      .reduce((resultProps, prop) => Object.assign(resultProps, { [prop]: this.props[prop] }), { ref: this.setNode });
 
-    // This will get id, className, style, etc. -- arbitrary element props
-    for (const prop in this.props) {
-      if (!this.props.hasOwnProperty(prop)) continue;
-      if (checkedProps.indexOf(prop) !== -1) continue;
-      elementProps[prop] = this.props[prop];
-    }
-
-    return React.createElement(
-      this.props.tag,
-      elementProps,
-      this.props.children
-    );
+    return React.createElement(this.props.tag, elementProps, this.props.children);
   }
 }
+
+FocusTrap.propTypes = {
+  active: PropTypes.bool,
+  tag: PropTypes.string,
+  paused: PropTypes.bool,
+  focusTrapOptions: PropTypes.object,
+  _createFocusTrap: PropTypes.func.isRequired,
+  children: PropTypes.node,
+};
 
 FocusTrap.defaultProps = {
   active: true,
@@ -90,4 +68,4 @@ FocusTrap.defaultProps = {
   _createFocusTrap: createFocusTrap
 };
 
-module.exports = FocusTrap;
+export default FocusTrap;
