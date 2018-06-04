@@ -10,11 +10,6 @@ const checkedProps = [
 ];
 
 class FocusTrap extends React.Component {
-  componentWillMount() {
-    if (typeof document !== 'undefined') {
-      this.previouslyFocusedElement = document.activeElement;
-    }
-  }
 
   componentDidMount() {
     // We need to hijack the returnFocusOnDeactivate option,
@@ -61,13 +56,6 @@ class FocusTrap extends React.Component {
 
   componentWillUnmount() {
     this.focusTrap.deactivate();
-    if (
-      this.props.focusTrapOptions.returnFocusOnDeactivate !== false &&
-      this.previouslyFocusedElement &&
-      this.previouslyFocusedElement.focus
-    ) {
-      this.previouslyFocusedElement.focus();
-    }
   }
 
   setNode = el => {
